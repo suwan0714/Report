@@ -42,7 +42,7 @@ function MapView({ selected, currentLocation }) {
         );
       }
     });
-  }, []);
+  }, [currentLocation]);
 
   useEffect(() => {
     if (
