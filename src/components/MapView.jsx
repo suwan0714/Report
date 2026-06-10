@@ -3,97 +3,78 @@ import { useEffect, useRef } from "react";
 function MapView({ selected, currentLocation }) {
   const mapRef = useRef(null);
 
+  // 지도 생성
   useEffect(() => {
     if (!window.kakao) return;
 
     window.kakao.maps.load(() => {
-      const container =
-        document.getElementById("map");
+      const container = document.getElementById("map");
 
       const options = {
-        center:
-          new window.kakao.maps.LatLng(
-            37.5665,
-            126.9780
-          ),
+        center: new window.kakao.maps.LatLng(37.5665, 126.978),
         level: 3,
       };
 
-      mapRef.current =
-        new window.kakao.maps.Map(
-          container,
-          options
-        );
-
-      if (currentLocation) {
-        const currentPos =
-          new window.kakao.maps.LatLng(
-            currentLocation.lat,
-            currentLocation.lng
-          );
-
-        new window.kakao.maps.Marker({
-          map: mapRef.current,
-          position: currentPos,
-        });
-
-        mapRef.current.setCenter(
-          currentPos
-        );
-      }
+      mapRef.current = new window.kakao.maps.Map(container, options);
     });
   }, [currentLocation]);
 
+  // 현재 위치 표시
   useEffect(() => {
-    if (
-      !mapRef.current ||
-      !selected
-    )
-      return;
+    if (!mapRef.current || !currentLocation) return;
 
-    const position =
-      new window.kakao.maps.LatLng(
-        Number(selected.y),
-        Number(selected.x)
-      );
+    console.log("현재 위치:", currentLocation);
 
-    const marker =
-      new window.kakao.maps.Marker({
-        map: mapRef.current,
-        position,
-      });
-
-    mapRef.current.setCenter(
-      position
+    const currentPos = new window.kakao.maps.LatLng(
+      currentLocation.lat,
+      currentLocation.lng,
     );
 
-    const infoWindow =
-      new window.kakao.maps.InfoWindow({
-        content: `
+    new window.kakao.maps.Marker({
+      map: mapRef.current,
+      position: currentPos,
+    });
+
+    mapRef.current.setCenter(currentPos);
+  }, [currentLocation]);
+
+  // 맛집 선택 시 이동
+  useEffect(() => {
+    if (!mapRef.current || !selected) return;
+
+    const position = new window.kakao.maps.LatLng(
+      Number(selected.y),
+      Number(selected.x),
+    );
+
+    const marker = new window.kakao.maps.Marker({
+      map: mapRef.current,
+      position,
+    });
+
+    mapRef.current.setCenter(position);
+
+    const infoWindow = new window.kakao.maps.InfoWindow({
+      content: `
           <div style="padding:10px;">
             ${selected.place_name}
           </div>
         `,
-      });
+    });
 
-    infoWindow.open(
-      mapRef.current,
-      marker
-    );
+    infoWindow.open(mapRef.current, marker);
   }, [selected]);
-useEffect(() => {
-  console.log("window.kakao =", window.kakao);
-}, []);
+
   return (
-  <div
-    id="map"
-    style={{
-      width: "800px",
-      height: "600px",
-      border: "1px solid black",
-    }}
-  />
-);
+    <div
+      id="map"
+      style={{
+        width: "800px",
+        height: "600px",
+        border: "1px solid black",
+      }}
+    />
+  );
 }
 
 export default MapView;
