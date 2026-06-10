@@ -2,15 +2,14 @@ import { useEffect, useRef } from "react";
 
 function MapView({ selected, currentLocation }) {
   const mapRef = useRef(null);
-  const currentMarkerRef = useRef(null);
-  const selectedMarkerRef = useRef(null);
+  const markerRef = useRef(null);
   const infoRef = useRef(null);
+
   // 지도 생성
   useEffect(() => {
     if (!window.kakao) return;
 
     window.kakao.maps.load(() => {
-      if (mapRef.current) return;
       const container = document.getElementById("map");
 
       const options = {
@@ -19,57 +18,55 @@ function MapView({ selected, currentLocation }) {
       };
 
       mapRef.current = new window.kakao.maps.Map(container, options);
+
+      // 현재 위치로 이동만 하고 마커는 생성 안 함
+      if (currentLocation) {
+        const currentPos = new window.kakao.maps.LatLng(
+          currentLocation.lat,
+          currentLocation.lng,
+        );
+
+        mapRef.current.setCenter(currentPos);
+      }
     });
   }, [currentLocation]);
 
-  // 현재 위치 표시
+  // 현재 위치 변경 시 지도 중심 이동
   useEffect(() => {
     if (!mapRef.current || !currentLocation) return;
 
-    if (currentMarkerRef.current) {
-      currentMarkerRef.current.setMap(null);
-      currentMarkerRef.current = null;
-    }
-    console.log("현재 위치:", currentLocation);
+    const currentPos = new window.kakao.maps.LatLng(
+      currentLocation.lat,
+      currentLocation.lng,
+    );
 
-    if (currentLocation) {
-      const currentPos = new window.kakao.maps.LatLng(
-        currentLocation.lat,
-        currentLocation.lng,
-      );
-
-      currentMarkerRef.current = new window.kakao.maps.Marker({
-        map: mapRef.current,
-        position: currentPos,
-      });
-
-      mapRef.current.setCenter(currentPos);
-    }
+    mapRef.current.setCenter(currentPos);
   }, [currentLocation]);
 
-  // 맛집 선택 시 이동
+  // 맛집 선택 시 마커 1개만 표시
   useEffect(() => {
     if (!mapRef.current || !selected) return;
 
-    if (selectedMarkerRef.current) {
-      selectedMarkerRef.current.setMap(null);
-      selectedMarkerRef.current = null;
-    }
-    if (infoRef.current) {
-      infoRef.current.close();
-      infoRef.current = null;
-    }
     const position = new window.kakao.maps.LatLng(
       Number(selected.y),
       Number(selected.x),
     );
 
+    // 기존 마커 제거
+    if (markerRef.current) {
+      markerRef.current.setMap(null);
+    }
+
+    // 기존 인포윈도우 제거
+    if (infoRef.current) {
+      infoRef.current.close();
+    }
+
     const marker = new window.kakao.maps.Marker({
-      map: mapRef.current,
       position,
     });
 
-    mapRef.current.setCenter(position);
+    marker.setMap(mapRef.current);
 
     const infoWindow = new window.kakao.maps.InfoWindow({
       content: `
@@ -80,15 +77,13 @@ function MapView({ selected, currentLocation }) {
     });
 
     infoWindow.open(mapRef.current, marker);
+
+    markerRef.current = marker;
+    infoRef.current = infoWindow;
+
+    mapRef.current.setCenter(position);
   }, [selected]);
-  useEffect(() => {
-    return () => {
-      if (currentMarkerRef.current) currentMarkerRef.current.setMap(null);
-      if (selectedMarkerRef.current) selectedMarkerRef.current.setMap(null);
-      if (infoRef.current) infoRef.current.close();
-      mapRef.current = null;
-    };
-  }, []);
+
   return (
     <div
       id="map"
