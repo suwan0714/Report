@@ -2,12 +2,15 @@ import { useEffect, useRef } from "react";
 
 function MapView({ selected, currentLocation }) {
   const mapRef = useRef(null);
-
+  const currentMarkerRef = useRef(null);
+  const selectedMarkerRef = useRef(null);
+  const infoRef = useRef(null);
   // 지도 생성
   useEffect(() => {
     if (!window.kakao) return;
 
     window.kakao.maps.load(() => {
+      if (mapRef.current) return;
       const container = document.getElementById("map");
 
       const options = {
@@ -23,25 +26,39 @@ function MapView({ selected, currentLocation }) {
   useEffect(() => {
     if (!mapRef.current || !currentLocation) return;
 
+    if (currentMarkerRef.current) {
+      currentMarkerRef.current.setMap(null);
+      currentMarkerRef.current = null;
+    }
     console.log("현재 위치:", currentLocation);
 
-    const currentPos = new window.kakao.maps.LatLng(
-      currentLocation.lat,
-      currentLocation.lng,
-    );
+    if (currentLocation) {
+      const currentPos = new window.kakao.maps.LatLng(
+        currentLocation.lat,
+        currentLocation.lng,
+      );
 
-    new window.kakao.maps.Marker({
-      map: mapRef.current,
-      position: currentPos,
-    });
+      currentMarkerRef.current = new window.kakao.maps.Marker({
+        map: mapRef.current,
+        position: currentPos,
+      });
 
-    mapRef.current.setCenter(currentPos);
+      mapRef.current.setCenter(currentPos);
+    }
   }, [currentLocation]);
 
   // 맛집 선택 시 이동
   useEffect(() => {
     if (!mapRef.current || !selected) return;
 
+    if (selectedMarkerRef.current) {
+      selectedMarkerRef.current.setMap(null);
+      selectedMarkerRef.current = null;
+    }
+    if (infoRef.current) {
+      infoRef.current.close();
+      infoRef.current = null;
+    }
     const position = new window.kakao.maps.LatLng(
       Number(selected.y),
       Number(selected.x),
@@ -64,7 +81,14 @@ function MapView({ selected, currentLocation }) {
 
     infoWindow.open(mapRef.current, marker);
   }, [selected]);
-
+  useEffect(() => {
+    return () => {
+      if (currentMarkerRef.current) currentMarkerRef.current.setMap(null);
+      if (selectedMarkerRef.current) selectedMarkerRef.current.setMap(null);
+      if (infoRef.current) infoRef.current.close();
+      mapRef.current = null;
+    };
+  }, []);
   return (
     <div
       id="map"
