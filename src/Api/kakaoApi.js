@@ -3,13 +3,15 @@ import axios from "axios";
 const REST_API_KEY = "331ce42b61116e9a99740098f46050c1";
 
 export const searchRestaurant = async (keyword, currentLocation) => {
+  console.log("검색어:", keyword);
+  console.log("현재위치:", currentLocation);
+
   const response = await axios.get(
     "https://dapi.kakao.com/v2/local/search/keyword.json",
     {
       headers: {
         Authorization: `KakaoAK ${REST_API_KEY}`,
       },
-
       params: {
         query: keyword,
         x: currentLocation?.lng,
@@ -17,12 +19,13 @@ export const searchRestaurant = async (keyword, currentLocation) => {
         radius: 2000,
         sort: "distance",
       },
-    },
+    }
   );
+
+  console.log(response.data.documents[0]);
 
   return response.data.documents;
 };
-
 export const searchNearbyRestaurant = async (x, y) => {
   const response = await axios.get(
     "https://dapi.kakao.com/v2/local/search/category.json",
