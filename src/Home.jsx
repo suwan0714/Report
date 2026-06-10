@@ -52,7 +52,7 @@ function Home() {
     if (!keyword || !keyword.trim()) {
       return;
     }
-
+    console.log("현재위치", currentLocation);
     const result = await searchRestaurant(keyword, currentLocation);
 
     setRestaurants(result);
