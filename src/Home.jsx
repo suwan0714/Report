@@ -52,7 +52,12 @@ function Home() {
     if (!keyword || !keyword.trim()) {
       return;
     }
-    console.log("현재위치", currentLocation);
+
+    if (!currentLocation) {
+      alert("현재 위치를 먼저 불러온 뒤 다시 시도해 주세요.");
+      return;
+    }
+
     const result = await searchRestaurant(keyword, currentLocation);
 
     setRestaurants(result);
