@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-function MapView({ selected, currentLocation }) {
+function MapView({ selected, currentLocation, onCenterChange }) {
   const mapRef = useRef(null);
   const currentMarkerRef = useRef(null);
   const selectedMarkerRef = useRef(null);
@@ -13,14 +13,27 @@ function MapView({ selected, currentLocation }) {
       if (mapRef.current) return;
       const container = document.getElementById("map");
 
+      const initialCenter = currentLocation
+        ? new window.kakao.maps.LatLng(currentLocation.lat, currentLocation.lng)
+        : new window.kakao.maps.LatLng(37.5665, 126.978);
+
       const options = {
-        center: new window.kakao.maps.LatLng(37.5665, 126.978),
+        center: initialCenter,
         level: 3,
       };
 
       mapRef.current = new window.kakao.maps.Map(container, options);
+
+      window.kakao.maps.event.addListener(mapRef.current, "center_changed", () => {
+        const center = mapRef.current.getCenter();
+
+        onCenterChange?.({
+          lat: center.getLat(),
+          lng: center.getLng(),
+        });
+      });
     });
-  }, [currentLocation]);
+  }, [currentLocation, onCenterChange]);
 
   // 현재 위치 표시
   useEffect(() => {
@@ -44,6 +57,10 @@ function MapView({ selected, currentLocation }) {
       });
 
       mapRef.current.setCenter(currentPos);
+      onCenterChange?.({
+        lat: currentLocation.lat,
+        lng: currentLocation.lng,
+      });
     }
   }, [currentLocation]);
 
