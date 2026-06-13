@@ -27,16 +27,21 @@ function Home() {
 
   const [currentLocation, setCurrentLocation] = useState(null);
 
+  const [mapCenter, setMapCenter] = useState(null);
+
   const [sortType, setSortType] = useState("default");
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        console.log(position.coords.latitude, position.coords.longitude);
-        setCurrentLocation({
+        const nextLocation = {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
-        });
+        };
+
+        console.log(position.coords.latitude, position.coords.longitude);
+        setCurrentLocation(nextLocation);
+        setMapCenter(nextLocation);
       },
       (error) => {
         console.log("위치 가져오기 실패", error);
@@ -53,26 +58,30 @@ function Home() {
       return;
     }
 
-    if (!currentLocation) {
+    const searchCenter = mapCenter ?? currentLocation;
+
+    if (!searchCenter) {
       alert("현재 위치를 먼저 불러온 뒤 다시 시도해 주세요.");
       return;
     }
 
-    const result = await searchRestaurant(keyword, currentLocation);
+    const result = await searchRestaurant(keyword, searchCenter);
 
     setRestaurants(result);
     setShowFavorites(false);
   };
 
   const handleNearbySearch = async () => {
-    if (!currentLocation) {
+    const searchCenter = mapCenter ?? currentLocation;
+
+    if (!searchCenter) {
       alert("현재 위치를 불러오는 중입니다.");
       return;
     }
 
     const result = await searchNearbyRestaurant(
-      currentLocation.lng,
-      currentLocation.lat,
+      searchCenter.lng,
+      searchCenter.lat,
     );
 
     setRestaurants(result);
@@ -149,7 +158,11 @@ function Home() {
           onSelect={setSelected}
         />
 
-        <MapView selected={selected} currentLocation={currentLocation} />
+        <MapView
+          selected={selected}
+          currentLocation={currentLocation}
+          onCenterChange={setMapCenter}
+        />
       </div>
     </div>
   );
