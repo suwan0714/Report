@@ -6,7 +6,7 @@ const REST_API_KEY =
 export const searchRestaurant =
 async (keyword, currentLocation) => {
 
-@@ -22,43 +17,11 @@ async (keyword, currentLocation) => {
+-22,43 +17,11 async (keyword, currentLocation) => {
       "https://dapi.kakao.com/v2/local/search/keyword.json",
       {
         params,
