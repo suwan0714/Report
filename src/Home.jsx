@@ -6,7 +6,7 @@ import RecommendFilter from "./components/RecommendFilter";
 import RestaurantList from "./components/RestaurantList";
 import MapView from "./components/MapView";
 
-import { searchRestaurant, searchNearbyRestaurant } from "./api/kakaoApi";
+import { searchRestaurant, searchNearbyRestaurant } from "./Api/kakaoApi";
 
 function Home() {
   const [restaurants, setRestaurants] = useState([]);
